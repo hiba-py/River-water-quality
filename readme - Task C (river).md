@@ -1,10 +1,10 @@
 # Water Data Analysis
 ## Initial Program Behaviour
-The input data is in a comma separated values (.CSV) file, with 13 columns including (river) name, location, sDate - sample date, npID - NIWA parameter ID, and (parameter) values
+The input data is in a comma separated values (.CSV) file, with 13 columns including river name, location, sDate (sample date), npID (NIWA parameter ID), and parameter values
 
 The user is then prompted to input numbers 0-2:
 - 0: Generate the water quality report
-- 1: Displacy time graph of the water quality report (not yet implemented)
+- 1: Display time graph of the water quality report (not yet implemented)
 - 2: Exit the programme
 
 When 0 is inputted, the user is then prompted to give a year and river name for water quality report. The programme outputs the average of all measured parameters for the specified year and river. Currently if user inputs 1, the output is 'Not implemented yet'.
