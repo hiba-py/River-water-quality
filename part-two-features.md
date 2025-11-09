@@ -10,10 +10,16 @@ Replace me with an outline of:
 - choices you made and why
 
 ## 2. Include Count, High, and Low Readings: Water Quality Report
-Replace me with an outline of:
+Added three columns to the `print_water_quality_report()` function to calculate and display additional information for each river:
+- Readings: Total count of measurements
+- Min: Minimum reading value
+- Max: Maximum reading value
 
-- how you implemented this feature
-- choices you made and why
+### Design choices
+1. Included three new (counter) variables (`count`, `min_val`, `max_val`) inside the existing loop to improve efficiency and avoid multiple passes over the data.
+2. Initialised `min_val` and `max_val` within each loop to get accurate statistical values for each river.
+3. Improved table format to include new statistics.
+4. Used centre alignment for columns using f-string formatting for improved readability. This ensures output is well-aligned regardless of the varying number of digits between readings.
 
 ## 3. Warn the User if No Records Found
 Replace me with an outline of:
