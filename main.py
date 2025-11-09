@@ -36,19 +36,27 @@ def menu_select(options: list[str]) -> int:
 
 
 def print_water_quality_report(year_of_interest: int, river_names: list[str]) -> None:
-    """Prints a table outlining the number of crashes in a given year for a given speed limit"""
+    """Prints a table outlining the quality reading in a given year for a given location"""
     data = read_csv_data(DATA_FILE, ["river", "sDate", "values"])
     print("Water Quality")
-    print("Name   Reading (mg/m3)")
+    print('-' * 56)
+    print(f"{'Name':15}{'Avg (mg/m3)':^10}{'Readings':^15}{'Min':^8}{'Max':^8}")
+    print('-' * 56)
     for name in river_names:
         count = 0
         total = 0
+        min_val = 0
+        max_val = 0
         for river_name, date_str, reading in data:
             date = datetime.strptime(date_str, "%d/%m/%Y")
             if name == river_name and year_of_interest == date.year:
                 total = total + reading
                 count += 1
-        print(f"{name:15}{total /  count:6.2f}")
+                if reading < min_val:
+                    min_val = reading
+                if reading > max_val:
+                    max_val = reading
+        print(f"{name:15}{total /  count:^10.2f}{count:^15}{min_val:^8}{max_val:^8}")
 
 
 def main():
