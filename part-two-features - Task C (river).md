@@ -9,7 +9,7 @@ Replace me with an outline of:
 - how you implemented this feature
 - choices you made and why
 
-## 2. Include Count, High, and Low Readings: Water Quality Report [CURRENTLY WORKING]
+## 2. Include Count, High, and Low Readings: Water Quality Report
 Replace me with an outline of:
 
 - how you implemented this feature
