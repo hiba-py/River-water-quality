@@ -120,6 +120,15 @@ def validate_river(all_rivers, user_input):
             return False
     return True
 
+def get_river_names(all_rivers):
+    """ Prompts user for river names """
+    while True:
+        rivers_string = input("River Names: ")
+        river_names = [r.strip() for r in rivers_string.split(",")]
+        if validate_river(all_rivers, river_names):
+            return river_names
+        print(f'Sorry, no data available for {', '.join([str(river) for river in river_names])}. Please enter another river')
+
 def plot_time_graph(rivers, start, end):
     """ Plots time graph for specified period """
     # Get the data
@@ -154,30 +163,15 @@ def main():
         while year not in range(years[0], years[1] + 1):
             print(f'Sorry, no data available for the year {year}. Please enter a year between {years[0]} and {years[1]}')
             year = int(input('Year: '))
-        rivers_string = input("River Names: ")
-        river_names = rivers_string.split(",")
-        while not validate_river(rivers, river_names):
-            print(f'Sorry, no data available for {', '.join([str(river) for river in river_names])}. Please enter another river')
-            rivers_string = input("River Names: ")
-            river_names = rivers_string.split(",")
+        river_names = get_river_names(rivers)
         print_water_quality_report(river_names, year)
     elif option == 1:
-        rivers_string = input("River Names: ")
-        river_names = rivers_string.split(",")
-        while not validate_river(rivers, river_names):
-            print(f'Sorry, no data available for {', '.join([str(river) for river in river_names])}. Please enter another river')
-            rivers_string = input("River Names: ")
-            river_names = rivers_string.split(",")
+        river_names = get_river_names(rivers)
         print_water_quality_report(river_names)
     elif option == 2:
         start_year = int(input('Start year: '))
         end_year = int(input('End year: '))
-        rivers_string = input("River Names: ")
-        river_names = rivers_string.split(",")
-        while not validate_river(rivers, river_names):
-            print(f'Sorry, no data available for {', '.join([str(river) for river in river_names])}. Please enter another river')
-            rivers_string = input("River Names: ")
-            river_names = rivers_string.split(",")
+        river_names = get_river_names(rivers)
         plot_time_graph(river_names, start_year, end_year)
     elif option == 3:
         print("Bye")
