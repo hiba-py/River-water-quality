@@ -1,5 +1,7 @@
 import pandas as pd
 from datetime import datetime
+import numpy as np
+import matplotlib.pyplot as plt
 
 DATA_FILE = "river-water-quality-raw-data-by-nrwqn-site-1989-2013.csv"
 
@@ -48,7 +50,7 @@ def get_all_years_data(river_data):
             river_data[location]['all'] = temp_dict
     return river_data
 
-def extract_river_data(river_names, year):
+def extract_river_data(river_names, year, period = None):
     """ Extracts water quality for given river(s)and year """
     data = read_csv_data(DATA_FILE, ["river", "sDate", "values"])
 
@@ -58,6 +60,9 @@ def extract_river_data(river_names, year):
     for river_name, date_str, reading, in data:
         date = datetime.strptime(date_str, "%d/%m/%Y")
         if year is not None and date.year != year: # continues loop as given year doesn't match
+            continue
+        if period is not None and (period[0] > date.year > period[1]):
+            # continues loop as current year is not within period
             continue
         if river_name in river_data:
             # Creates new dictionary for given river and current year if not in dictionary
@@ -73,7 +78,7 @@ def extract_river_data(river_names, year):
                 if year_data['max'] < reading:
                     year_data['max'] = reading
     # Create all years dictionary
-    if year is None:
+    if year is None and period is None:
         river_data = get_all_years_data(river_data)
     return river_data
 
@@ -115,6 +120,25 @@ def validate_river(all_rivers, user_input):
             return False
     return True
 
+def plot_time_graph(rivers, start, end):
+    """ Plots time graph for specified period """
+    # Get the data
+    data = extract_river_data(rivers, None, (start, end))
+    x = np.arange(start, end + 1)
+    y = {river:[] for river in data}
+    colours = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w']
+    for river in data:
+        for year in range(start, end + 1):
+            avg = data[river][year]['total'] / data[river][year]['count']
+            y[river].append(avg)
+    
+    # plot data
+    axes = plt.axes()
+    for num, name in enumerate(y, start = 1):
+        axes.plot(x, y[name], color = colours[num % len(colours)], label = name)
+    axes.legend()
+    plt.show()
+
 def main():
     """Small application that presents tables and graphs based on water quality data."""
     menu_options = [
@@ -146,7 +170,15 @@ def main():
             river_names = rivers_string.split(",")
         print_water_quality_report(river_names)
     elif option == 2:
-        print("Not Implemented Yet")
+        start_year = int(input('Start year: '))
+        end_year = int(input('End year: '))
+        rivers_string = input("River Names: ")
+        river_names = rivers_string.split(",")
+        while not validate_river(rivers, river_names):
+            print(f'Sorry, no data available for {', '.join([str(river) for river in river_names])}. Please enter another river')
+            rivers_string = input("River Names: ")
+            river_names = rivers_string.split(",")
+        plot_time_graph(river_names, start_year, end_year)
     elif option == 3:
         print("Bye")
 
