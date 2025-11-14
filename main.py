@@ -34,29 +34,46 @@ def menu_select(options: list[str]) -> int:
         selection = int(input(prompt))
     return selection
 
+def extract_river_data(river_names, year):
+    """ Extracts water quality for given river(s)and year """
+    data = read_csv_data(DATA_FILE, ["river", "sDate", "values"])
+
+    # Initalise dictionary
+    river_data = {name.strip(): {} for name in river_names}
+    
+    for river_name, date_str, reading, in data:
+        date = datetime.strptime(date_str, "%d/%m/%Y")
+        if year is not None and date.year != year: # continues loop as given year doesn't match
+            continue
+        if river_name in river_data:
+            # Creates new dictionary for given river and current year if not in dictionary
+            if date.year not in river_data[river_name]:
+                river_data[river_name][date.year] = {'count': 1, 'total': reading,
+                                                     'min': reading, 'max': reading}
+            else:
+                year_data = river_data[river_name][date.year]
+                year_data['count'] += 1
+                year_data['total'] += reading
+                if year_data['min'] > reading:
+                    year_data['min'] = reading
+                if year_data['max'] < reading:
+                    year_data['max'] = reading
+    return river_data
 
 def print_water_quality_report(year_of_interest: int, river_names: list[str]) -> None:
     """Prints a table outlining the quality reading in a given year for a given location"""
-    data = read_csv_data(DATA_FILE, ["river", "sDate", "values"])
-    print("Water Quality")
+    data = extract_river_data(river_names, year_of_interest)
+    print("Water Quality", year_of_interest)
     print('-' * 56)
     print(f"{'Name':15}{'Avg (mg/m3)':^10}{'Readings':^15}{'Min':^8}{'Max':^8}")
     print('-' * 56)
-    for name in river_names:
-        count = 0
-        total = 0
-        min_val = 0
-        max_val = 0
-        for river_name, date_str, reading in data:
-            date = datetime.strptime(date_str, "%d/%m/%Y")
-            if name == river_name and year_of_interest == date.year:
-                total = total + reading
-                count += 1
-                if reading < min_val:
-                    min_val = reading
-                if reading > max_val:
-                    max_val = reading
-        print(f"{name:15}{total /  count:^10.2f}{count:^15}{min_val:^8}{max_val:^8}")
+    for location in data:
+        river_data = data[location]
+        count = river_data[year_of_interest]['count']
+        total = river_data[year_of_interest]['total']
+        min_val = river_data[year_of_interest]['min']
+        max_val = river_data[year_of_interest]['max']
+        print(f"{location:15}{total /  count:^10.2f}{count:^15}{min_val:^8}{max_val:^8}")
 
 def extract_valid_year_and_river():
     """ Reads data input and returns range for year and valid river names """
