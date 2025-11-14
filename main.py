@@ -34,6 +34,20 @@ def menu_select(options: list[str]) -> int:
         selection = int(input(prompt))
     return selection
 
+def get_all_years_data(river_data):
+    """ Combines yearly data for each river """
+    for location in river_data:
+            temp_dict = {'count': 0, 'total': 0, 'min': 1e6, 'max': -1e6}
+            for year in river_data[location]:
+                temp_dict['count'] += river_data[location][year]['count']
+                temp_dict['total'] += river_data[location][year]['total']
+                if temp_dict['min'] > river_data[location][year]['min']:
+                    temp_dict['min'] = river_data[location][year]['min']
+                if temp_dict['max'] < river_data[location][year]['max']:
+                    temp_dict['max'] = river_data[location][year]['max']
+            river_data[location]['all'] = temp_dict
+    return river_data
+
 def extract_river_data(river_names, year):
     """ Extracts water quality for given river(s)and year """
     data = read_csv_data(DATA_FILE, ["river", "sDate", "values"])
@@ -58,11 +72,16 @@ def extract_river_data(river_names, year):
                     year_data['min'] = reading
                 if year_data['max'] < reading:
                     year_data['max'] = reading
+    # Create all years dictionary
+    if year is None:
+        river_data = get_all_years_data(river_data)
     return river_data
 
-def print_water_quality_report(year_of_interest: int, river_names: list[str]) -> None:
+def print_water_quality_report(river_names: list[str], year_of_interest: int = None) -> None:
     """Prints a table outlining the quality reading in a given year for a given location"""
     data = extract_river_data(river_names, year_of_interest)
+    if year_of_interest is None:
+        year_of_interest = 'all'
     print("Water Quality", year_of_interest)
     print('-' * 56)
     print(f"{'Name':15}{'Avg (mg/m3)':^10}{'Readings':^15}{'Min':^8}{'Max':^8}")
@@ -100,6 +119,7 @@ def main():
     """Small application that presents tables and graphs based on water quality data."""
     menu_options = [
         "Water Quality Report",
+        'Water Quality Report - All years',
         "Water Quality Over Time Graph",
         "Exit"
     ]
@@ -116,10 +136,18 @@ def main():
             print(f'Sorry, no data available for {', '.join([str(river) for river in river_names])}. Please enter another river')
             rivers_string = input("River Names: ")
             river_names = rivers_string.split(",")
-        print_water_quality_report(year, river_names)
+        print_water_quality_report(river_names, year)
     elif option == 1:
-        print("Not Implemented Yet")
+        rivers_string = input("River Names: ")
+        river_names = rivers_string.split(",")
+        while not validate_river(rivers, river_names):
+            print(f'Sorry, no data available for {', '.join([str(river) for river in river_names])}. Please enter another river')
+            rivers_string = input("River Names: ")
+            river_names = rivers_string.split(",")
+        print_water_quality_report(river_names)
     elif option == 2:
+        print("Not Implemented Yet")
+    elif option == 3:
         print("Bye")
 
 
