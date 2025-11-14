@@ -47,7 +47,7 @@ def get_all_years_data(river_data):
                     temp_dict['min'] = river_data[location][year]['min']
                 if temp_dict['max'] < river_data[location][year]['max']:
                     temp_dict['max'] = river_data[location][year]['max']
-            river_data[location]['all'] = temp_dict
+            river_data[location]['All years'] = temp_dict
     return river_data
 
 def extract_river_data(river_names, year, period = None):
@@ -86,8 +86,8 @@ def print_water_quality_report(river_names: list[str], year_of_interest: int = N
     """Prints a table outlining the quality reading in a given year for a given location"""
     data = extract_river_data(river_names, year_of_interest)
     if year_of_interest is None:
-        year_of_interest = 'all'
-    print("Water Quality", year_of_interest)
+        year_of_interest = 'All years'
+    print("Water Quality:", year_of_interest)
     print('-' * 56)
     print(f"{'Name':15}{'Avg (mg/m3)':^10}{'Readings':^15}{'Min':^8}{'Max':^8}")
     print('-' * 56)
