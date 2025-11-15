@@ -161,6 +161,16 @@ def get_valid_year(years, prompt):
         year = validate_year(prompt)
     return year
 
+def get_time_period(years):
+    """ Checks whether time period is logically valid 
+        - start year must be earlier than end year """
+    while True:
+        start_year = get_valid_year(years, 'Start year: ')
+        end_year = get_valid_year(years, 'End year: ')
+        if start_year < end_year:
+            return start_year, end_year
+        print(f'Invalid time period, please enter again.')
+
 def main():
     """Small application that presents tables and graphs based on water quality data."""
     menu_options = [
@@ -181,12 +191,7 @@ def main():
         river_names = get_river_names(rivers)
         print_water_quality_report(quality_data, river_names)
     elif option == 2:
-        start_year = get_valid_year(years, 'Start year: ')
-        end_year = get_valid_year(years, 'End year: ')
-        while (start_year < years[0] or end_year > years[1]) or (start_year > end_year):
-            print(f'Invalid time period, please enter again.\nEnter a year between {years[0]} and {years[1]}')
-            start_year = get_valid_year(years, 'Start year: ')
-            end_year = get_valid_year(years, 'End year: ')
+        start_year, end_year = get_time_period(years)
         river_names = get_river_names(rivers)
         plot_time_graph(quality_data, river_names, start_year, end_year)
     elif option == 3:
