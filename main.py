@@ -171,6 +171,10 @@ def main():
     elif option == 2:
         start_year = int(input('Start year: '))
         end_year = int(input('End year: '))
+        while (start_year < years[0] or end_year > years[1]) or (start_year > end_year):
+            print(f'Invalid time period, please enter again.\nEnter a year between {years[0]} and {years[1]}')
+            start_year = int(input('Start year: '))
+            end_year = int(input('End year: '))
         river_names = get_river_names(rivers)
         plot_time_graph(river_names, start_year, end_year)
     elif option == 3:
