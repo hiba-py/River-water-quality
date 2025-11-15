@@ -113,7 +113,7 @@ def extract_valid_year_and_river(quality_data):
 def validate_river(all_rivers, user_input):
     """ Checks each user inputted river name in data. Returns True if all names are in data """
     for river in user_input:
-        if river.strip() not in all_rivers:
+        if river not in all_rivers:
             return False
     return True
 
@@ -145,6 +145,22 @@ def plot_time_graph(quality_data, rivers, start, end):
     axes.legend()
     plt.show()
 
+def validate_year(prompt):
+    """ Prompts user to enter year, and validates whether input is an integer"""
+    while True:
+        year = input(prompt)
+        if year.isnumeric():
+            return int(year.strip())
+        print(f'Enter numeric year')
+
+def get_valid_year(years, prompt):
+    """ Validates whether year is within data range """
+    year = validate_year(prompt)
+    while year not in range(years[0], years[1] + 1):
+        print(f'Sorry, no data available for the year {year}. Please enter a year between {years[0]} and {years[1]}')
+        year = validate_year(prompt)
+    return year
+
 def main():
     """Small application that presents tables and graphs based on water quality data."""
     menu_options = [
@@ -158,22 +174,19 @@ def main():
     years, rivers = extract_valid_year_and_river(quality_data)
     option = menu_select(menu_options)
     if option == 0:
-        year = int(input("Year: "))
-        while year not in range(years[0], years[1] + 1):
-            print(f'Sorry, no data available for the year {year}. Please enter a year between {years[0]} and {years[1]}')
-            year = int(input('Year: '))
+        year = get_valid_year(years, "Year: ")
         river_names = get_river_names(rivers)
         print_water_quality_report(quality_data, river_names, year)
     elif option == 1:
         river_names = get_river_names(rivers)
         print_water_quality_report(quality_data, river_names)
     elif option == 2:
-        start_year = int(input('Start year: '))
-        end_year = int(input('End year: '))
+        start_year = get_valid_year(years, 'Start year: ')
+        end_year = get_valid_year(years, 'End year: ')
         while (start_year < years[0] or end_year > years[1]) or (start_year > end_year):
             print(f'Invalid time period, please enter again.\nEnter a year between {years[0]} and {years[1]}')
-            start_year = int(input('Start year: '))
-            end_year = int(input('End year: '))
+            start_year = get_valid_year(years, 'Start year: ')
+            end_year = get_valid_year(years, 'End year: ')
         river_names = get_river_names(rivers)
         plot_time_graph(quality_data, river_names, start_year, end_year)
     elif option == 3:
