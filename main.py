@@ -50,14 +50,12 @@ def get_all_years_data(river_data):
             river_data[location]['All years'] = temp_dict
     return river_data
 
-def extract_river_data(river_names, year, period = None):
+def extract_river_data(quality_data, river_names, year, period = None):
     """ Extracts water quality for given river(s)and year """
-    data = read_csv_data(DATA_FILE, ["river", "sDate", "values"])
-
     # Initalise dictionary
     river_data = {name.strip(): {} for name in river_names}
     
-    for river_name, date_str, reading, in data:
+    for river_name, date_str, reading, in quality_data:
         date = datetime.strptime(date_str, "%d/%m/%Y")
         if year is not None and date.year != year: # continues loop as given year doesn't match
             continue
@@ -82,9 +80,9 @@ def extract_river_data(river_names, year, period = None):
         river_data = get_all_years_data(river_data)
     return river_data
 
-def print_water_quality_report(river_names: list[str], year_of_interest: int = None) -> None:
+def print_water_quality_report(quality_data , river_names: list[str], year_of_interest: int = None) -> None:
     """Prints a table outlining the quality reading in a given year for a given location"""
-    data = extract_river_data(river_names, year_of_interest)
+    data = extract_river_data(quality_data, river_names, year_of_interest)
     if year_of_interest is None:
         year_of_interest = 'All years'
     print("Water Quality:", year_of_interest)
@@ -99,24 +97,23 @@ def print_water_quality_report(river_names: list[str], year_of_interest: int = N
         max_val = river_data[year_of_interest]['max']
         print(f"{location:15}{total /  count:^10.2f}{count:^15}{min_val:^8}{max_val:^8}")
 
-def extract_valid_year_and_river():
+def extract_valid_year_and_river(quality_data):
     """ Reads data input and returns range for year and valid river names """
-    data = read_csv_data(DATA_FILE, ["river", "sDate", "values"])
     years = []
     all_rivers = []
 
-    for i in range(len(data)):
-        year = datetime.strptime(data[i][1], "%d/%m/%Y").year
+    for i in range(len(quality_data)):
+        year = datetime.strptime(quality_data[i][1], "%d/%m/%Y").year
         if year not in years:
             years.append(year)
-        if data[i][0] not in all_rivers:
-            all_rivers.append(data[i][0])
+        if quality_data[i][0] not in all_rivers:
+            all_rivers.append(quality_data[i][0])
     return (min(years), max(years)), all_rivers
 
 def validate_river(all_rivers, user_input):
     """ Checks each user inputted river name in data. Returns True if all names are in data """
-    for i in range(len(user_input)):
-        if user_input[i].strip() not in all_rivers:
+    for river in user_input:
+        if river.strip() not in all_rivers:
             return False
     return True
 
@@ -129,10 +126,10 @@ def get_river_names(all_rivers):
             return river_names
         print(f'Sorry, no data available for {', '.join([str(river) for river in river_names])}. Please enter another river')
 
-def plot_time_graph(rivers, start, end):
+def plot_time_graph(quality_data, rivers, start, end):
     """ Plots time graph for specified period """
     # Get the data
-    data = extract_river_data(rivers, None, (start, end))
+    data = extract_river_data(quality_data, rivers, None, (start, end))
     x = np.arange(start, end + 1)
     y = {river:[] for river in data}
     colours = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w']
@@ -156,7 +153,9 @@ def main():
         "Water Quality Over Time Graph",
         "Exit"
     ]
-    years, rivers = extract_valid_year_and_river()
+    # loads data only once
+    quality_data = read_csv_data(DATA_FILE, ["river", "sDate", "values"])
+    years, rivers = extract_valid_year_and_river(quality_data)
     option = menu_select(menu_options)
     if option == 0:
         year = int(input("Year: "))
@@ -164,10 +163,10 @@ def main():
             print(f'Sorry, no data available for the year {year}. Please enter a year between {years[0]} and {years[1]}')
             year = int(input('Year: '))
         river_names = get_river_names(rivers)
-        print_water_quality_report(river_names, year)
+        print_water_quality_report(quality_data, river_names, year)
     elif option == 1:
         river_names = get_river_names(rivers)
-        print_water_quality_report(river_names)
+        print_water_quality_report(quality_data, river_names)
     elif option == 2:
         start_year = int(input('Start year: '))
         end_year = int(input('End year: '))
@@ -176,7 +175,7 @@ def main():
             start_year = int(input('Start year: '))
             end_year = int(input('End year: '))
         river_names = get_river_names(rivers)
-        plot_time_graph(river_names, start_year, end_year)
+        plot_time_graph(quality_data, river_names, start_year, end_year)
     elif option == 3:
         print("Bye")
 
