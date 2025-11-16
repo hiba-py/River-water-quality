@@ -135,7 +135,6 @@ def plot_time_graph(quality_data, rivers, start, end):
     colours = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w']
     for river in data:
         for year in range(start, end + 1):
-            print(data[river])
             avg = data[river][year]['total'] / data[river][year]['count']
             y[river].append(avg)
     
