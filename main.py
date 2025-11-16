@@ -59,7 +59,7 @@ def extract_river_data(quality_data, river_names, year, period = None):
         date = datetime.strptime(date_str, "%d/%m/%Y")
         if year is not None and date.year != year: # continues loop as given year doesn't match
             continue
-        if period is not None and not (date.year < period[0] or date.year > period[1]):
+        if period is not None and (date.year < period[0] or date.year > period[1]):
             # continues loop as current year is not within period
             continue
         if river_name in river_data:
@@ -135,6 +135,7 @@ def plot_time_graph(quality_data, rivers, start, end):
     colours = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w']
     for river in data:
         for year in range(start, end + 1):
+            print(data[river])
             avg = data[river][year]['total'] / data[river][year]['count']
             y[river].append(avg)
     
