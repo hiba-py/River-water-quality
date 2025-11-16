@@ -15,11 +15,29 @@ Added three columns to the `print_water_quality_report()` function to calculate 
 - Min: Minimum reading value
 - Max: Maximum reading value
 
+The function was then modified into two parts of the programme:
+- `extract_river_data()`: reads csv data and aggregates yearly statistics for each river
+- `print_water_quality_report()`: prints the final results as a table
+
 ### Design choices
-1. Included three new (counter) variables (`count`, `min_val`, `max_val`) inside the existing loop to improve efficiency and avoid multiple passes over the data.
-2. Initialised `min_val` and `max_val` within each loop to get accurate statistical values for each river.
-3. Improved table format to include new statistics.
-4. Used centre alignment for columns using f-string formatting for improved readability. This ensures output is well-aligned regardless of the varying number of digits between readings.
+1. Utilised nested dictionaries to store each rivers data
+    - Data is stored in the form:
+    `{river: 
+        {year: {
+            'count': ...,
+            'total': ...,
+            'min': ...,
+            'max': ...}}}`
+    - This data structure was chosen as:
+        - It allows easy access to any river/year combination as the results are mapped
+        - Groups readings by year
+        - Can be updated in each iteration so relevant data is collected through one pass rather than multiple
+        - Can be used for other features such as implementing statistics for all years and creating time series of results
+2. `extract_river_data()` processes each data row once while simultaneoulsy updating counter variables in dictionary, `continue` statements are used to skip the rest of the loop when relevant conditions are not met.
+3. Included two new (counter) variables (`min_val`, `max_val`) inside loop to improve efficiency and avoid multiple passes over the data.
+4. Initialised `min_val` and `max_val` within each loop to get accurate statistical values for each river.
+5. Improved table format to include new statistics and display the year of interest.
+6. Used centre alignment for columns using f-string formatting for improved readability. This ensures output is well-aligned regardless of the varying number of digits between readings.
 
 ## 3. Warn the User if No Records Found
 Replace me with an outline of:
