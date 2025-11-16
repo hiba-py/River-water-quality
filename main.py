@@ -59,7 +59,7 @@ def extract_river_data(quality_data, river_names, year, period = None):
         date = datetime.strptime(date_str, "%d/%m/%Y")
         if year is not None and date.year != year: # continues loop as given year doesn't match
             continue
-        if period is not None and (period[0] > date.year > period[1]):
+        if period is not None and not (date.year < period[0] or date.year > period[1]):
             # continues loop as current year is not within period
             continue
         if river_name in river_data:
@@ -169,7 +169,7 @@ def get_time_period(years):
         end_year = get_valid_year(years, 'End year: ')
         if start_year < end_year:
             return start_year, end_year
-        print(f'Invalid time period, please enter again.')
+        print(f'Invalid time period, please enter again.\nStart year cannot be greater than or equal to end year.')
 
 def main():
     """Small application that presents tables and graphs based on water quality data."""
