@@ -3,7 +3,7 @@ from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
 
-DATA_FILE = "river-water-quality-raw-data-by-nrwqn-site-1989-2013.csv"
+DATA_FILE = "data/river-water-quality-raw-data-by-nrwqn-site-1989-2013.csv"
 
 
 def read_csv_data(filename: str, columns: list[str]) -> list[tuple]:
@@ -124,7 +124,7 @@ def get_river_names(all_rivers):
         river_names = [r.strip() for r in rivers_string.split(",")]
         if validate_river(all_rivers, river_names):
             return river_names
-        print(f'Sorry, no data available for {', '.join([str(river) for river in river_names])}. Please enter another river')
+        print(f"Sorry, no data available for {', '.join([str(river) for river in river_names])}. Please enter another river")
 
 def plot_time_graph(quality_data, rivers, start, end):
     """ Plots time graph for specified period """
