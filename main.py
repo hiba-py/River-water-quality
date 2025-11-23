@@ -126,22 +126,33 @@ def get_river_names(all_rivers):
             return river_names
         print(f"Sorry, no data available for {', '.join([str(river) for river in river_names])}. Please enter another river")
 
+def get_plot_data(quality_data, rivers, start, end):
+    """ Extracts x and y values for time plot as numpy arrays """
+    data = extract_river_data(quality_data, rivers, None, (start, end))
+    x = np.arange(start, end + 1)
+    act_y = np.array([])
+    print(end - start + 1)
+    for river in data:
+        print(river)
+        for year in range(start, end + 1):
+            print(year)
+            avg = data[river][year]['total'] / data[river][year]['count']
+            act_y = np.append(act_y, avg)
+    act_y = act_y.reshape(len(data), (end - start + 1))
+    act_y = act_y.transpose()
+    return x, act_y
+
 def plot_time_graph(quality_data, rivers, start, end):
     """ Plots time graph for specified period """
     # Get the data
-    data = extract_river_data(quality_data, rivers, None, (start, end))
-    x = np.arange(start, end + 1)
-    y = {river:[] for river in data}
-    colours = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w']
-    for river in data:
-        for year in range(start, end + 1):
-            avg = data[river][year]['total'] / data[river][year]['count']
-            y[river].append(avg)
+    x, y = get_plot_data(quality_data, rivers, start, end)
     
     # plot data
     axes = plt.axes()
-    for num, name in enumerate(y, start = 1):
-        axes.plot(x, y[name], color = colours[num % len(colours)], label = name)
+    axes.plot(x, y, label = rivers)
+    axes.set_title(f"Water Quality for {start}-{end}")
+    axes.set_ylabel("Average Water Quality (mg/m$^3$)")
+    axes.set_xlabel("Year")
     axes.legend()
     plt.show()
 
