@@ -129,15 +129,14 @@ def get_river_names(all_rivers):
 def get_plot_data(quality_data, rivers, start, end):
     """ Extracts x and y values for time plot as numpy arrays """
     data = extract_river_data(quality_data, rivers, None, (start, end))
-    x = np.arange(start, end + 1)
-    act_y = np.array([])
-    for river in data:
-        for year in range(start, end + 1):
+    x_vals = np.arange(start, end + 1)
+    y_vals = np.array([])
+    for year in range(start, end + 1):
+        for river in data:
             avg = data[river][year]['total'] / data[river][year]['count']
-            act_y = np.append(act_y, avg)
-    act_y = act_y.reshape(len(data), (end - start + 1))
-    act_y = act_y.transpose()
-    return x, act_y
+            y_vals = np.append(y_vals, avg)
+    y_vals = y_vals.reshape((end - start + 1), len(data))
+    return x_vals, y_vals
 
 def plot_time_graph(quality_data, rivers, start, end):
     """ Plots time graph for specified period """
