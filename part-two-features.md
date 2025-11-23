@@ -49,14 +49,14 @@ Data is first read through `extract_valid_year_and_river()` which collects all u
 Function loops through `quality_data` using `datetime.strptime(date_str, "%d/%m/%Y").year` to extract year from strings. In the same iteration, it appends the year and river if it's not already in list.
 
 #### 2. Validation functions
-Secondly user input is validated against the results of the former function in `validate_river()`, `get_river_names()`, and `get_valid_year()`. The purpose of each functions are as follows:
-- `validate_river()`: Validates each user entered river against the list of valid river names returned from extracting function. If the immediate river is not in the reference list, it immediately returns `False`.
-- `get_river_names()`: Prompts user for river names.
-- `get_valid_year()`: Uses earliest and latest year returned from `extract_valid_year_and_river()` to check whether entered year is within valid range.
+Secondly, user input is validated against the results of the functions `validate_river()`, `get_river_names()`, and `get_valid_year()`. The purpose of each function is as follows:
+- `validate_river()`: Validates each user-entered river against the list of valid river names returned from the extracting function. Returns `True` if all rivers are in the reference list, otherwise returns a list of invalid river names.
+- `get_river_names()`: Prompts user for river names. If the entered river name is not in the list, an error message is displayed with invalid names.
+- `get_valid_year()`: Uses the earliest and latest year returned from `extract_valid_year_and_river()` to check whether the entered year is within the valid range.
 
 ### Design choices
 1. `extract_valid_year_and_river()` is read at the beginning of user prompt to efficiently validate user input.
-2. Helpful error message which shows valid year range.
+2. Helpful error message which shows valid year range and invalid river names
 3. Reduces redudant code in `main()` by centralising validation
 4. Ensures programme does not prematurely crash if no result found for entered year and river.
 
