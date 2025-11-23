@@ -32,9 +32,9 @@ The function was then modified into two parts of the programme:
         - Groups readings by year
         - Can be updated in each iteration so relevant data is collected through one pass rather than multiple
         - Can be used for other features such as implementing statistics for all years and creating time series of results
-2. `extract_river_data()` processes each data row once while simultaneoulsy updating counter variables in dictionary, `continue` statements are used to skip the rest of the loop when relevant conditions are not met.
-3. Included two new (counter) variables (`min_val`, `max_val`) inside loop to improve efficiency and avoid multiple passes over the data.
-4. Initialised `min_val` and `max_val` within each loop to get accurate statistical values for each river.
+2. `extract_river_data()` processes each data row once while simultaneously updating counter variables in the dictionary; `continue` statements are used to skip the rest of the loop when relevant conditions are not met.
+3. Included counter variables (`min`, `max`, `count`, `total`) inside the loop to improve efficiency and avoid multiple passes over the data.
+4. Initialised `min` and `max` within each loop to the first reading and then updated through comparison operators to get accurate statistical values for each river.
 5. Improved table format to include new statistics and display the year of interest.
 6. Used centre alignment for columns using f-string formatting for improved readability. This ensures output is well-aligned regardless of the varying number of digits between readings.
 
@@ -46,7 +46,7 @@ This feature has been implemented in two pipelines:
 #### 1. Pre-processing the dataset
 Data is first read through `extract_valid_year_and_river()` which collects all unique years and river names. Function returns two values: a tuple of the earliest and latest year, and the list of all valid river names in dataset.
 
-Function loops through `quality_data` using `datetime.strptime(date_str, %d/%m/%Y%).year` to extract year from strings. In the same iteration, it appends the year and river if it's not already in list.
+Function loops through `quality_data` using `datetime.strptime(date_str, "%d/%m/%Y").year` to extract year from strings. In the same iteration, it appends the year and river if it's not already in list.
 
 #### 2. Validation functions
 Secondly user input is validated against the results of the former function in `validate_river()`, `get_river_names()`, and `get_valid_year()`. The purpose of each functions are as follows:
@@ -76,12 +76,14 @@ Lastly, the results are then printed through existing function `print_water_qual
 ## 5. Line Graph of Water Quality Over Time
 Implemented a time series graphing option that visualises the water quality across rivers for chosen time periods using `matplotlib.pyplot`.
 
-Programme calls `extract_river_data()` with `period` parameter to get yearly data, then loops over dictionary to get yearly average data. Y values are stored in a dictionary of lists, and `np.arange()` is used to gain x-values (the years).
+Time periods are validated by the `get_time_period()` function, which prompts the user for start and end years. The function ensures the entered value is a valid year by `get_valid_year()`, and the start year is earlier than the later year.
 
-Time periods are validated by `get_time_period()` function which prompts user for start and end years. The function ensures the entered value is of valid year by `get_valid_year()`, and start year is earlier than later year.
+Main plotting is performed by the `plot_time_graph()` function, which in turn calls the helper function `get_plot_data()`. This helper function converts data from a dictionary into NumPy arrays to create accessible plot-time graphs for each river. The function loops through each time period, then through each river to calculate yearly averages and append each average to the array. X values are 1-dimensional arrays containing years using `np.arange()`. Y values are initially appended to a 1-D array, then changed to 2-dimensional arrays using `reshape` with dimensions (number of years x number of rivers) to allow `matplotlib.pyplot` to plot each river as a separate line.
 
 ### Design choices:
-1. Utlises existing functions to reduce redudant code and maximise efficiency.
-2. Uses colour cycling so that each river is of different colour, this ensures easy readablity. This is done by creating a list of valid colours in `matplotlib.pyplot`, where colour is chosen by index from using the modulo of the iteration step and the length of valid colour.
-3. Helpful error message is displayed if time period is not logically valid.
-4. Additional condition added to `extract_river_data()` to only get yearly data for chosen time period.
+1. Utilises existing functions to reduce redundant code and maximise efficiency.
+2. A helpful error message is displayed if the time period is not logically valid.
+3. Additional condition added to `extract_river_data()` to only get yearly data for the chosen time period.
+4. Added title displaying time period and axis labels with scientific notation.
+5. Use NumPy arrays to handle multi-river data efficiently and support `matplotlib`.
+6. Separated data extraction into `get_plot_data()` helper function for cleaner code organisation.
