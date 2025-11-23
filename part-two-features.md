@@ -51,7 +51,7 @@ Function loops through `quality_data` using `datetime.strptime(date_str, "%d/%m/
 #### 2. Validation functions
 Secondly, user input is validated against the results of the functions `validate_river()`, `get_river_names()`, and `get_valid_year()`. The purpose of each function is as follows:
 - `validate_river()`: Validates each user-entered river against the list of valid river names returned from the extracting function. Returns `True` if all rivers are in the reference list, otherwise returns a list of invalid river names.
-- `get_river_names()`: Prompts user for river names. If the entered river name is not in the list, an error message is displayed with invalid names.
+- `get_river_names()`: Prompts user for river names, splits input using `.split(",")` and strips whitespace using `.strip()`, then calls `validate_river()`. If the entered river name is not in the list, an error message is displayed with the invalid names, and the user is prompted again.
 - `get_valid_year()`: Uses the earliest and latest year returned from `extract_valid_year_and_river()` to check whether the entered year is within the valid range.
 
 ### Design choices
