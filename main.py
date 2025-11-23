@@ -111,20 +111,28 @@ def extract_valid_year_and_river(quality_data):
     return (min(years), max(years)), all_rivers
 
 def validate_river(all_rivers, user_input):
-    """ Checks each user inputted river name in data. Returns True if all names are in data """
+    """ Checks each user inputted river name in data. 
+        Returns True if all names are in data, else returns list of invalid names"""
+    invalid_rivers = []
     for river in user_input:
         if river not in all_rivers:
-            return False
-    return True
+            invalid_rivers.append(river)
+
+    if invalid_rivers == []:
+        return True
+    else:
+        return invalid_rivers
 
 def get_river_names(all_rivers):
     """ Prompts user for river names """
     while True:
         rivers_string = input("River Names: ")
         river_names = [r.strip() for r in rivers_string.split(",")]
-        if validate_river(all_rivers, river_names):
+        invalid_names = validate_river(all_rivers, river_names)
+        if invalid_names == True:
             return river_names
-        print(f"Sorry, no data available for {', '.join([str(river) for river in river_names])}. Please enter another river")
+        else:
+            print(f'Sorry, no data available for {', '.join([str(river) for river in invalid_names])}. Please enter another river')
 
 def get_plot_data(quality_data, rivers, start, end):
     """ Extracts x and y values for time plot as numpy arrays """
