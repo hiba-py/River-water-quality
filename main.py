@@ -3,7 +3,7 @@ from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
 
-DATA_FILE = "data/river-water-quality-raw-data-by-nrwqn-site-1989-2013.csv"
+DATA_FILE = "river-water-quality-raw-data-by-nrwqn-site-1989-2013.csv"
 
 
 def read_csv_data(filename: str, columns: list[str]) -> list[tuple]:
