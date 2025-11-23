@@ -131,11 +131,8 @@ def get_plot_data(quality_data, rivers, start, end):
     data = extract_river_data(quality_data, rivers, None, (start, end))
     x = np.arange(start, end + 1)
     act_y = np.array([])
-    print(end - start + 1)
     for river in data:
-        print(river)
         for year in range(start, end + 1):
-            print(year)
             avg = data[river][year]['total'] / data[river][year]['count']
             act_y = np.append(act_y, avg)
     act_y = act_y.reshape(len(data), (end - start + 1))
