@@ -2,6 +2,8 @@ import pandas as pd
 from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
+import geopandas as gpd
+import plotly.express as px
 
 DATA_FILE = "river-water-quality-raw-data-by-nrwqn-site-1989-2013.csv"
 
@@ -186,12 +188,72 @@ def get_time_period(years):
             return start_year, end_year
         print(f'Invalid time period, please enter again.\nStart year cannot be greater than or equal to end year.')
 
+def clean_data():
+    """ Reads csv file and selects E.coli data """
+    years_2013_2017 = pd.read_csv('river-water-quality-state-20132017.csv', 
+                                    usecols = ['s_id', 'long', 'lat', 'np_id', 'median', 'landcover', 'river', 'location'])
+    years_2013_2017 = years_2013_2017[years_2013_2017.np_id == 'ECOLI']
+    return years_2013_2017
+
+def load_nz_regions():
+    """ Loads regional boundaries for New Zealand using GeoJSON """
+    regions = gpd.read_file('nz.json')
+    regions = regions.rename(columns = {'name': 'region'})
+    return regions
+
+def add_regions_to_data():
+    """ Adds region column to data
+        Longitude and latitude points are stored as a GeoPandas dataframe. 
+        Regional boundaries (from json file) are used to group points into regions. """
+    df = clean_data()
+
+    # convert to geo-dataframe
+    geo_df = gpd.GeoDataFrame(df, geometry = gpd.points_from_xy(df.long, df.lat),
+                              crs = 'EPSG:4326')
+    
+    regions = load_nz_regions()
+
+    # add regions to geo_df using spatial join
+    geo_df_regions = gpd.sjoin(geo_df, regions, how = 'left', predicate = 'within')
+    return geo_df_regions
+
+def ecoli_by_regions(data):
+    """ Aggregates statistics by region """
+    region_stats = data.groupby('region').agg(
+        median_ecoli = ('median', 'median'),
+        mean_ecoli = ('median', 'mean'),
+        max_ecoli = ('median', 'max'),
+        min_ecoli = ('median', 'min'),
+        count = ('s_id', 'count')
+    )
+    return region_stats
+
+def map_data():
+    """ Maps median E.coli value by region """
+    data = add_regions_to_data()
+    data = ecoli_by_regions(data)
+    geojson_data = load_nz_regions()
+
+    regions_data = geojson_data.merge(data, left_on = 'region', right_on = 'region', how = 'left')
+
+    fig = px.choropleth(regions_data,
+                        geojson = regions_data.geometry,
+                        locations = regions_data.index,
+                        color = 'median_ecoli',
+                        color_continuous_scale = 'Reds',
+                        hover_name = 'region',
+                        hover_data = ['median_ecoli', 'count'])
+    
+    fig.update_geos(fitbounds = "locations", visible = False)
+    fig.show()
+
 def main():
     """Small application that presents tables and graphs based on water quality data."""
     menu_options = [
         "Water Quality Report",
         'Water Quality Report - All years',
         "Water Quality Over Time Graph",
+        'E.coli Choropleth Map',
         "Exit"
     ]
     # loads data only once
@@ -210,6 +272,8 @@ def main():
         river_names = get_river_names(rivers)
         plot_time_graph(quality_data, river_names, start_year, end_year)
     elif option == 3:
+        map_data()
+    elif option == 4:
         print("Bye")
 
 
