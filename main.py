@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import geopandas as gpd
 import plotly.express as px
+from pyproj import Transformer
 
 DATA_FILE = "river-water-quality-raw-data-by-nrwqn-site-1989-2013.csv"
 
@@ -188,12 +189,34 @@ def get_time_period(years):
             return start_year, end_year
         print(f'Invalid time period, please enter again.\nStart year cannot be greater than or equal to end year.')
 
-def clean_data():
-    """ Reads csv file and selects E.coli data """
-    years_2013_2017 = pd.read_csv('river-water-quality-state-20132017.csv', 
-                                    usecols = ['s_id', 'long', 'lat', 'np_id', 'median', 'landcover', 'river', 'location'])
-    years_2013_2017 = years_2013_2017[years_2013_2017.np_id == 'ECOLI']
-    return years_2013_2017
+def clean_and_sort_data():
+    """ Selects E.coli data, creates year column, and sorts data by year """
+    all_years_df = pd.read_csv(DATA_FILE, 
+                                    usecols = ['river', 'location', 'nzmge', 'nzmgn', 'sDate', 'npID', 'values'])
+    all_years_ecoli_df = all_years_df[all_years_df.npID == 'ECOLI']
+    # add year column
+    all_years_ecoli_df = all_years_ecoli_df.assign(year = lambda x: pd.to_datetime(x['sDate']).dt.year)
+    all_years_ecoli_df = all_years_ecoli_df.sort_values(axis = 0, by = ['year'])
+    return all_years_ecoli_df
+
+def convert_to_longlat(data):
+    """ Converts easting & northing to longitude and latitude for plotting """
+    # Select easting and northing
+    data_clean = data.dropna(subset = ['nzmge', 'nzmgn'])
+    
+    # Convert from New Zealand map grid
+    transformer = Transformer.from_crs("EPSG:27200", "EPSG:4326", always_xy = True)
+    eastings = data_clean['nzmge']
+    northings = data_clean['nzmgn']
+    
+    # Convert coordinates to longitutde and latitiude
+    long, lati = transformer.transform(eastings.values, northings.values)
+    
+    # Add to dataframe
+    data_clean = data_clean.copy()
+    data_clean['lon'] = long
+    data_clean['lat'] = lati
+    return data_clean
 
 def load_nz_regions():
     """ Loads regional boundaries for New Zealand using GeoJSON """
@@ -201,14 +224,14 @@ def load_nz_regions():
     regions = regions.rename(columns = {'name': 'region'})
     return regions
 
-def add_regions_to_data():
+def add_regions_to_data(data):
     """ Adds region column to data
         Longitude and latitude points are stored as a GeoPandas dataframe. 
         Regional boundaries (from json file) are used to group points into regions. """
-    df = clean_data()
-
+    df = convert_to_longlat(data)
+    
     # convert to geo-dataframe
-    geo_df = gpd.GeoDataFrame(df, geometry = gpd.points_from_xy(df.long, df.lat),
+    geo_df = gpd.GeoDataFrame(df, geometry = gpd.points_from_xy(df.lon, df.lat),
                               crs = 'EPSG:4326')
     
     regions = load_nz_regions()
@@ -219,32 +242,31 @@ def add_regions_to_data():
 
 def ecoli_by_regions(data):
     """ Aggregates statistics by region """
-    region_stats = data.groupby('region').agg(
-        median_ecoli = ('median', 'median'),
-        mean_ecoli = ('median', 'mean'),
-        max_ecoli = ('median', 'max'),
-        min_ecoli = ('median', 'min'),
-        count = ('s_id', 'count')
-    )
+    region_stats = data.groupby(['region', 'year'])['values'].agg([
+        ('count', 'count'),
+        ('mean', 'mean'),
+        ('min', 'min'),
+        ('max', 'max')]).reset_index()
     return region_stats
 
 def map_data():
-    """ Maps median E.coli value by region """
-    data = add_regions_to_data()
+    """ Maps data by npID on New Zealand map """
+    data = clean_and_sort_data()
+    data = add_regions_to_data(data)
     data = ecoli_by_regions(data)
     geojson_data = load_nz_regions()
-
-    regions_data = geojson_data.merge(data, left_on = 'region', right_on = 'region', how = 'left')
-
-    fig = px.choropleth(regions_data,
-                        geojson = regions_data.geometry,
-                        locations = regions_data.index,
-                        color = 'median_ecoli',
-                        color_continuous_scale = 'Reds',
-                        hover_name = 'region',
-                        hover_data = ['median_ecoli', 'count'])
     
-    fig.update_geos(fitbounds = "locations", visible = False)
+    # Create map
+    fig = px.choropleth(data,
+                        geojson = geojson_data,
+                        locations = 'region',
+                        featureidkey = 'properties.region',
+                        color = 'mean',
+                        color_continuous_scale = 'bluyl',
+                        hover_name = 'region',
+                        hover_data = ['min', 'max', 'count'],
+                        animation_frame = 'year')
+    fig.update_geos(fitbounds = 'locations')
     fig.show()
 
 def main():
@@ -275,6 +297,5 @@ def main():
         map_data()
     elif option == 4:
         print("Bye")
-
 
 main()
