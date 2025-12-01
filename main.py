@@ -192,7 +192,8 @@ def get_time_period(years):
 def clean_and_sort_data():
     """ Selects E.coli data, creates year column, and sorts data by year """
     all_years_df = pd.read_csv(DATA_FILE, 
-                                    usecols = ['river', 'location', 'nzmge', 'nzmgn', 'sDate', 'npID', 'values'])
+                                    usecols = ['river', 'location', 'nzmge',
+                                                'nzmgn', 'sDate', 'npID', 'values'])
     all_years_ecoli_df = all_years_df[all_years_df.npID == 'ECOLI']
     # add year column
     all_years_ecoli_df = all_years_ecoli_df.assign(year = lambda x: pd.to_datetime(x['sDate']).dt.year)
@@ -250,7 +251,7 @@ def ecoli_by_regions(data):
     return region_stats
 
 def map_data():
-    """ Maps data by npID on New Zealand map """
+    """ Maps E.coli data on New Zealand map """
     data = clean_and_sort_data()
     data = add_regions_to_data(data)
     data = ecoli_by_regions(data)
@@ -265,7 +266,8 @@ def map_data():
                         color_continuous_scale = 'bluyl',
                         hover_name = 'region',
                         hover_data = ['min', 'max', 'count'],
-                        animation_frame = 'year')
+                        animation_frame = 'year',
+                        title = 'New Zealand River Water Quality')
     fig.update_geos(fitbounds = 'locations')
     fig.show()
 
